@@ -12,12 +12,12 @@ enum class PackageQueueType {
 class IPackageStockPile {
   public:
     virtual void push(Package&& other) = 0;
-    virtual bool empty() = 0;
-    virtual std::size_t size() = 0;
-    virtual std::list<Package>::const_iterator begin() = 0;
-    virtual std::list<Package>::const_iterator end() = 0;
-    virtual std::list<Package>::const_iterator cbegin() = 0;
-    virtual std::list<Package>::const_iterator cend() = 0;
+    virtual bool empty() const = 0;
+    virtual std::size_t size() const = 0;
+    virtual std::list<Package>::const_iterator begin() const = 0;
+    virtual std::list<Package>::const_iterator end() const = 0;
+    virtual std::list<Package>::const_iterator cbegin() const = 0;
+    virtual std::list<Package>::const_iterator cend() const = 0;
     virtual ~IPackageStockPile() = default;
   };
 
@@ -34,12 +34,12 @@ class PackageQueue : public IPackageQueue {
     Package pop() override;
     PackageQueueType get_queue_type() const override;
     void push(Package&& other) override;
-    bool empty() override;
-    std::size_t size() override;
-    std::list<Package>::const_iterator begin() override;
-    std::list<Package>::const_iterator end() override;
-    std::list<Package>::const_iterator cbegin() override;
-    std::list<Package>::const_iterator cend() override;
+    bool empty() const override;
+    std::size_t size() const override;
+    std::list<Package>::const_iterator begin() const override;
+    std::list<Package>::const_iterator end() const override;
+    std::list<Package>::const_iterator cbegin() const override;
+    std::list<Package>::const_iterator cend() const override;
     ~PackageQueue() override = default;
   private:
     PackageQueueType queue_type_;
