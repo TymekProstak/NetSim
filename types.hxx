@@ -1,5 +1,1 @@
-#include "types.hxx"
-
-class Package {
-    
-};
+using ElementID = int;
