@@ -1,10 +1,9 @@
-#ifndef HELPERS_HPP_
-#define HELPERS_HPP_
+#pragma once
 
 #include <functional>
 #include <random>
 
-#include "types.hxx"
+#include "types.hpp"
 
 extern std::random_device rd;
 extern std::mt19937 rng;
