@@ -22,5 +22,3 @@ public:
 private:
     ElementID id_;
 };
-
-#endif
