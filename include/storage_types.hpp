@@ -48,3 +48,4 @@ class PackageQueue : public IPackageQueue {
     PackageQueueType queue_type_;
     std::list<Package> queue_;
 };
+
