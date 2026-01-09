@@ -6,44 +6,64 @@
 
 class Package {
 public:
-    Package(ElementID id) : id_(id) {};
+    Package(ElementID id) : id_(id) {
+        assigned_IDs.insert(id_);
+        if (freed_IDs.count(id_)) {
+            freed_IDs.erase(id_);
+        }
+    }
 
     Package() {
         if (freed_IDs.empty()) {
             if (assigned_IDs.empty()) {
                 id_ = 1;
-                assigned_IDs = {1};
             } else {
                 id_ = *assigned_IDs.rbegin() + 1;
-                assigned_IDs.emplace(id_);
             }
         } else {
             id_ = *freed_IDs.begin();
-            assigned_IDs.emplace(id_);
-            freed_IDs.erase(freed_IDs.find(id_));
+            freed_IDs.erase(id_);
         }
+        assigned_IDs.insert(id_);
     }
 
-    Package(Package&&) = default;
+    Package(Package&& other) noexcept {
+        id_ = other.id_;
+        other.id_ = -1;
+    }
 
-    inline Package& operator=(Package&& other) noexcept {
+    Package& operator=(Package&& other) noexcept {
         if (this != &other) {
-            id_ = std::move(other.id_);
+
+            if (id_ != -1) {
+                assigned_IDs.erase(id_);
+                freed_IDs.insert(id_);
+            }
+            
+            id_ = other.id_;
+            
+            other.id_ = -1;
         }
         return *this;
     }
 
-    inline ElementID get_id() const {
+    Package(const Package&) = delete;
+    Package& operator=(const Package&) = delete;
+
+    ElementID get_id() const {
         return id_;
     }
 
-    ~Package(){
-        assigned_IDs.erase(assigned_IDs.find(id_));
-        freed_IDs.emplace(id_);
+    ~Package() {
+ 
+        if (id_ != -1) { 
+            assigned_IDs.erase(id_);
+            freed_IDs.insert(id_);
+        }
     }
 
 private:
-    ElementID id_;
+    ElementID id_ = -1;
     inline static std::set<ElementID> assigned_IDs;
     inline static std::set<ElementID> freed_IDs; 
 };

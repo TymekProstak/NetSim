@@ -33,15 +33,13 @@ set(PLIKI_ZRODLOWE
 # --- SEKCJA 2: Aplikacja Główna ---
 add_executable(Aplikacja src/main.cpp ${PLIKI_ZRODLOWE})
 
-# !!! NAPRAWA BŁĘDU "No such file or directory" w main.cpp !!!
-# Skoro w main.cpp includujesz gtest.h, musisz podlinkować bibliotekę tutaj:
 target_link_libraries(Aplikacja PRIVATE gtest gtest_main)
 
 
 # --- SEKCJA 3: Konfiguracja Testów ---
 enable_testing()
 
-add_executable(Testy tests.cpp ${PLIKI_ZRODLOWE})
+add_executable(Testy test/tests.cpp ${PLIKI_ZRODLOWE})
 
 # Linkowanie dla pliku z testami
 target_link_libraries(Testy PRIVATE gtest gtest_main)

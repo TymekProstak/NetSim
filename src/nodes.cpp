@@ -1,1 +1,76 @@
+#include "nodes.hpp"
 
+void ReciverPreferences::add_receiver(IPackageReceiver* r) {
+    preferences_[r] = 0.0;
+    double equal_prob = 1.0 / preferences_.size();
+    for (auto& [receiver, prob] : preferences_) {
+        prob = equal_prob;
+    }
+}
+
+void ReciverPreferences::remove_receiver(IPackageReceiver* r) {
+    preferences_.erase(r);
+    if (!preferences_.empty()) {
+        double equal_prob_step = 1.0 / preferences_.size();
+        double prob_sum = equal_prob_step;
+        for (auto& [receiver, prob] : preferences_) {
+            prob = prob_sum;
+            prob_sum += equal_prob_step;
+        }
+    }
+}
+
+IPackageReceiver* ReciverPreferences::choose_receiver() const {
+    if (preferences_.empty()) {
+        return nullptr;
+    }
+
+    const double p = generate_probability_();
+    if (p < 0.0 || p > 1.0) {
+        return nullptr;
+    }
+
+    double prev_p = 0.0;
+    for (const auto& [receiver, prob] : preferences_) {
+        if (prev_p < p && p <= prob) {
+            return receiver;
+        }
+        prev_p = prob;
+    }
+
+    return preferences_.rbegin()->first;
+}
+
+void PackageSender::send_package() {
+    if (!buffer_) {
+        return;
+    }
+    IPackageReceiver* receiver = receiver_preferences_.choose_receiver();
+    if (receiver == nullptr) {
+        return;
+    }
+    receiver->receive_package(std::move(*buffer_));
+    buffer_ = std::nullopt;
+}
+
+void Worker::do_work(Time t) {
+    if (!buffer_.has_value() && !queue_->empty()) {
+        t_ = t;
+        buffer_.emplace(queue_->pop());
+    }
+
+    if (buffer_.has_value() && (t - t_ + 1 == pd_)) {
+        push_package(Package(buffer_->get_id()));
+        buffer_.reset();
+    }
+}
+
+void Ramp::deliver_goods(Time t) {
+    if (buffer_.has_value()) {
+        return;
+    }
+
+    if  ((t - 1) % delivery_interval_ == 0){
+        push_package(Package());
+    }
+}
