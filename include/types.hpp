@@ -6,4 +6,4 @@ using ElementID = int;
 using Time = int;
 using TimeOffset = int;
 
-using PropabilityGenerator = std::function<double()>;
+using ProbabilityGenerator = std::function<double()>;
