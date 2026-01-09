@@ -4,7 +4,6 @@ project(NetSim)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS OFF)
 
 # --- SEKCJA 1: Pobieranie Google Test ---
 include(FetchContent)
@@ -34,19 +33,17 @@ set(PLIKI_ZRODLOWE
 # --- SEKCJA 2: Aplikacja Główna ---
 add_executable(Aplikacja src/main.cpp ${PLIKI_ZRODLOWE})
 
-# !!! NAPRAWA BŁĘDU "No such file or directory" w main.cpp !!!
-# Skoro w main.cpp includujesz gtest.h, musisz podlinkować bibliotekę tutaj:
 target_link_libraries(Aplikacja PRIVATE gtest gtest_main)
 
 
 # --- SEKCJA 3: Konfiguracja Testów ---
 enable_testing()
 
-add_executable(Testy tests.cpp ${PLIKI_ZRODLOWE})
+add_executable(Testy test/tests.cpp ${PLIKI_ZRODLOWE})
 
 # Linkowanie dla pliku z testami
 target_link_libraries(Testy PRIVATE gtest gtest_main)
 
 # Integracja z VS Code / CTest
 include(GoogleTest)
-gtest_discover_tests(netsim_tests)
+gtest_discover_tests(Testy)

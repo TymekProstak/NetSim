@@ -1,6 +1,8 @@
 #pragma once
 #include "storage_types.hpp"
 #include "types.hpp"
+#include "helpers.hpp"
+#include "package.hpp"
 
 #include <map>
 #include <utility>
@@ -107,7 +109,7 @@ class Ramp : public PackageSender {
 
       void deliver_goods(Time t);
     
-      ~Ramp() override = default;
+      ~Ramp() = default;
     
   private:
       ElementID id_;
