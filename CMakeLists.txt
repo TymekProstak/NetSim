@@ -1,47 +1,34 @@
-cmake_minimum_required(VERSION 3.14) # FetchContent wymaga min 3.14
+cmake_minimum_required(VERSION 3.16)
 
-project(MojProjekt)
+project(NetSim LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
-# --- SEKCJA 1: Pobieranie Google Test ---
-include(FetchContent)
-
-FetchContent_Declare(
-  googletest
-  URL https://github.com/google/googletest/archive/refs/heads/main.zip
-)
-# To zapobiega nadpisywaniu ustawień kompilatora przez gtest (szczególnie na Windows)
-set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-
-FetchContent_MakeAvailable(googletest)
-# ----------------------------------------
-
-include_directories(include)
-
-# Lista plików z Twoją logiką
-set(PLIKI_ZRODLOWE
-    src/helpers.cpp
-    src/nodes.cpp
-    src/package.cpp
-    src/storage_types.cpp
-)
-
-# Aplikacja Główna
-add_executable(Aplikacja src/main.cpp ${PLIKI_ZRODLOWE})
-
-# --- SEKCJA 2: Konfiguracja Testów ---
 enable_testing()
 
-# Tworzymy plik wykonywalny testów
-add_executable(Testy tests.cpp ${PLIKI_ZRODLOWE})
+add_library(netsim
+    src/package.cpp
+    src/storage_types.cpp
+    src/nodes.cpp
+)
+target_include_directories(netsim PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
-# Łączymy go z bibliotekami gtest
-# gtest_main -> dostarcza gotową funkcję main(), więc nie musisz jej pisać w tests.cpp!
-# gtest -> sama biblioteka asercji
-target_link_libraries(Testy PRIVATE gtest_main gtest)
+# ---- GoogleTest ----
+include(FetchContent)
+FetchContent_Declare(
+  googletest
+  URL https://github.com/google/googletest/archive/refs/tags/v1.14.0.zip
+)
+set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+FetchContent_MakeAvailable(googletest)
 
-# Dzięki temu VS Code wykryje testy w zakładce "Testing"
+add_executable(netsim_tests
+    test/tests.cpp
+)
+target_link_libraries(netsim_tests PRIVATE netsim GTest::gtest_main)
+target_include_directories(netsim_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+
 include(GoogleTest)
-gtest_discover_tests(Testy)
+gtest_discover_tests(netsim_tests)
