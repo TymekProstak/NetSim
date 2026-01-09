@@ -4,6 +4,7 @@ project(NetSim)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 # --- SEKCJA 1: Pobieranie Google Test ---
 include(FetchContent)
@@ -48,4 +49,4 @@ target_link_libraries(Testy PRIVATE gtest gtest_main)
 
 # Integracja z VS Code / CTest
 include(GoogleTest)
-gtest_discover_tests(Testy)
+gtest_discover_tests(netsim_tests)
