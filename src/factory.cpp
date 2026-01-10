@@ -43,10 +43,15 @@ bool Factory::has_reachable_storehouse(const PackageSender* sender, std::map<con
             if (PackageSender_ptr == sender) {
                 continue;
             }
-            has_other_receiver = true;
+            
             if (colors[PackageSender_ptr] == NodeColor::NOT_VISITED) {
                 has_reachable_storehouse(PackageSender_ptr, colors);
+                has_other_receiver = true;
             }
+            else if (colors[PackageSender_ptr] == NodeColor::VERIFIED) {
+                has_other_receiver = true;
+            }
+            
         }
     }
     colors[sender] = NodeColor::VERIFIED;
