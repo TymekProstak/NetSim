@@ -102,7 +102,6 @@ class PackageSender {
     
         PackageSender(PackageSender&& p) = default;
         
-    
         void send_package();
     
         const std::optional<Package>& get_sending_buffer() const { return buffer_; };

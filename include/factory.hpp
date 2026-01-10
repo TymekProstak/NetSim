@@ -5,6 +5,8 @@
 #include <list>
 #include <optional>
 
+enum class NodeColor {NOT_VISITED, VISITED, VERIFIED};
+
 template <typename Node>
 class NodeCollection {
 public:
@@ -45,6 +47,8 @@ public:
     // Iteratory
     iterator begin() { return nodes_.begin(); }
     iterator end() { return nodes_.end(); }
+    const_iterator begin() const { return nodes_.begin(); }
+    const_iterator end() const { return nodes_.end(); }
     const_iterator cbegin() const { return nodes_.cbegin(); }
     const_iterator cend() const { return nodes_.cend(); }
 
@@ -158,6 +162,7 @@ private:
         collection.remove_by_id(id);
         // DOROBIENIE USUWANIA Z PREFERENCJI INNYCH WĘZŁÓW
     }
+    bool has_reachable_storehouse(const PackageSender* sender, std::map<const PackageSender*, NodeColor>& colors) const;
     NodeCollection<Ramp> ramps_;
     NodeCollection<Worker> workers_;
     NodeCollection<Storehouse> storehouses_;

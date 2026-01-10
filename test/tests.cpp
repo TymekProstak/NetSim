@@ -4,6 +4,7 @@
 #include "types.hpp"
 #include "nodes.hpp"
 #include "helpers.hpp"
+#include "factory.hpp"
 
 TEST(PackageTest, IsAssignedIdLowest) {
     // przydzielanie ID o jeden większych -- utworzenie dwóch obiektów pod rząd
@@ -258,4 +259,77 @@ TEST(WorkerTest, SendsProcessedPackageCorrectly) {
     w.do_work(4);
     EXPECT_FALSE(w.get_sending_buffer().has_value());
     EXPECT_EQ(std::distance(sh.cbegin(), sh.cend()), 2);
+}
+
+TEST(FactoryConsistencyTest, TrivialConsistentNetwork) {
+    Factory factory;
+
+    // 1. Tworzenie węzłów
+    factory.add_ramp(Ramp(1, 1));
+    factory.add_worker(Worker(1, 1, std::make_unique<PackageQueue>(PackageQueueType::FIFO)));
+    factory.add_storehouse(Storehouse(1, std::make_unique<PackageQueue>(PackageQueueType::FIFO)));
+
+    // 2. Pobieranie wskaźników (iteratorów) do obiektów wewnątrz fabryki
+    // Uwaga: Musimy to robić PO dodaniu do fabryki, bo przy dodawaniu obiekty są przenoszone (move)
+    auto ramp_it = factory.find_ramp_by_id(1);
+    auto worker_it = factory.find_worker_by_id(1);
+    auto store_it = factory.find_storehouse_by_id(1);
+
+    // 3. Łączenie węzłów (Wiring)
+    // Rampa -> Robotnik
+    ramp_it->receiver_preferences_.add_receiver(&(*worker_it));
+    // Robotnik -> Magazyn
+    worker_it->receiver_preferences_.add_receiver(&(*store_it));
+
+    // 4. Weryfikacja
+    // Oczekujemy, że sieć jest spójna
+    EXPECT_TRUE(factory.is_consistent());
+}
+
+// TEST 2: Ślepy zaułek
+// Struktura: [Rampa 1] -> [Robotnik 1] -> (BRAK ODBIORCY)
+TEST(FactoryConsistencyTest, DeadEndNetwork) {
+    Factory factory;
+
+    factory.add_ramp(Ramp(1, 1));
+    factory.add_worker(Worker(1, 1, std::make_unique<PackageQueue>(PackageQueueType::FIFO)));
+    // Brak magazynu!
+
+    auto ramp_it = factory.find_ramp_by_id(1);
+    auto worker_it = factory.find_worker_by_id(1);
+
+    // Rampa wysyła do robotnika
+    ramp_it->receiver_preferences_.add_receiver(&(*worker_it));
+    
+    // Robotnik nie wysyła nigdzie (brak add_receiver)
+
+    // Oczekujemy, że sieć NIE jest spójna (is_consistent zwróci false)
+    EXPECT_FALSE(factory.is_consistent());
+}
+
+// TEST 3: Cykl bez wyjścia
+// Struktura: [Rampa 1] -> [Robotnik 1] <--> [Robotnik 2]
+// Paczka wpada w pętlę i nigdy nie trafia do magazynu.
+TEST(FactoryConsistencyTest, CycleWithoutStorehouse) {
+    Factory factory;
+
+    factory.add_ramp(Ramp(1, 1));
+    factory.add_worker(Worker(1, 1, std::make_unique<PackageQueue>(PackageQueueType::FIFO)));
+    factory.add_worker(Worker(2, 1, std::make_unique<PackageQueue>(PackageQueueType::FIFO)));
+
+    auto ramp_it = factory.find_ramp_by_id(1);
+    auto w1_it = factory.find_worker_by_id(1);
+    auto w2_it = factory.find_worker_by_id(2);
+
+    // Rampa -> W1
+    ramp_it->receiver_preferences_.add_receiver(&(*w1_it));
+    
+    // W1 -> W2
+    w1_it->receiver_preferences_.add_receiver(&(*w2_it));
+
+    // W2 -> W1 (Pętla zamknięta)
+    w2_it->receiver_preferences_.add_receiver(&(*w1_it));
+
+    // Oczekujemy false, bo nie ma dojścia do żadnego Storehouse
+    EXPECT_FALSE(factory.is_consistent());
 }
