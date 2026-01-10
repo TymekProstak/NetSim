@@ -11,6 +11,7 @@
 #include <memory>
 #include <optional>
 
+
 class IPackageReceiver {
   public:
       virtual void receive_package(Package&& p) = 0;
@@ -26,13 +27,12 @@ class IPackageReceiver {
 
 
 
-class ReciverPreferences {
+class ReceiverPreferences {
   public:
     using preferences_t = std::map<IPackageReceiver*, double>;
     using const_iterator = preferences_t::const_iterator;
 
-     ReciverPreferences(ProbabilityGenerator pg = probability_generator)
-        : preferences_(), generate_probability_(std::move(pg)) {}
+    ReceiverPreferences(ProbabilityGenerator pg = probability_generator) : preferences_(), generate_probability_(std::move(pg)) {}
 
     void add_receiver(IPackageReceiver* r);
     void remove_receiver(IPackageReceiver* r);
@@ -92,7 +92,7 @@ class PackageSender {
     
         const std::optional<Package>& get_sending_buffer() const { return buffer_; };
     
-         ReciverPreferences receiver_preferences_;
+        ReceiverPreferences receiver_preferences_;
     protected:
         void push_package(Package&& p) { buffer_ = std::move(p); }
     
@@ -134,7 +134,18 @@ class Ramp : public PackageSender {
           return pd_;
       }
       void do_work(Time t);
-        
+      IPackageStockPile::const_iterator cbegin() const override {
+          return queue_->cbegin();
+      }   
+      IPackageStockPile::const_iterator cend() const override {
+          return queue_->cend();
+      }
+        IPackageStockPile::const_iterator begin() const override {
+          return queue_->begin();
+      }
+        IPackageStockPile::const_iterator end() const override {
+          return queue_->end();
+      }
 
       private:
       ElementID id_;
