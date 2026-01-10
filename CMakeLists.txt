@@ -28,6 +28,7 @@ set(PLIKI_ZRODLOWE
     src/nodes.cpp
     src/package.cpp
     src/storage_types.cpp
+    src/factory.cpp
 )
 
 # --- SEKCJA 2: Aplikacja Główna ---
