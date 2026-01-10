@@ -5,65 +5,7 @@
 #include "nodes.hpp"
 #include "helpers.hpp"
 #include "factory.hpp"
-
-TEST(PackageTest, IsAssignedIdLowest) {
-    // przydzielanie ID o jeden większych -- utworzenie dwóch obiektów pod rząd
-
-    Package p1;
-    Package p2;
-
-    EXPECT_EQ(p1.get_id(), 1);
-    EXPECT_EQ(p2.get_id(), 2);
-}
-
-TEST(PackageTest, IsIdReused) {
-    // przydzielanie ID po zwolnionym obiekcie
-
-    {
-        Package p1;
-    }
-    Package p2;
-
-    EXPECT_EQ(p2.get_id(), 1);
-}
-
-TEST(PackageTest, IsMoveConstructorCorrect) {
-    Package p1;
-    Package p2(std::move(p1));
-
-    EXPECT_EQ(p2.get_id(), 1);
-}
-
-TEST(PackageTest, IsAssignmentOperatorCorrect) {
-    Package p1;
-    Package p2 = std::move(p1);
-
-    EXPECT_EQ(p2.get_id(), 1);
-}
-
-TEST(PackageQueueTest, IsFifoCorrect) {
-    PackageQueue q(PackageQueueType::FIFO);
-    q.push(Package(1));
-    q.push(Package(2));
-
-    Package p(std::move(q.pop()));
-    EXPECT_EQ(p.get_id(), 1);
-
-    p = q.pop();
-    EXPECT_EQ(p.get_id(), 2);
-}
-
-TEST(PackageQueueTest, IsLifoCorrect) {
-    PackageQueue q(PackageQueueType::LIFO);
-    q.push(Package(1));
-    q.push(Package(2));
-
-    Package p(std::move(q.pop()));
-    EXPECT_EQ(p.get_id(), 2);
-
-    p = q.pop();
-    EXPECT_EQ(p.get_id(), 1);
-}
+#include "io.hpp"
 
 TEST(PackageSenderTest, SendingClearsBuffer) {
     Ramp r(1,1);
@@ -332,4 +274,184 @@ TEST(FactoryConsistencyTest, CycleWithoutStorehouse) {
 
     // Oczekujemy false, bo nie ma dojścia do żadnego Storehouse
     EXPECT_FALSE(factory.is_consistent());
+}
+
+TEST(FactoryTest, RemovingReceiverRemovesLinks) {
+    Factory factory;
+
+    factory.add_ramp(Ramp(1, 1));
+    factory.add_worker(Worker(1, 1, std::make_unique<PackageQueue>(PackageQueueType::FIFO)));
+    factory.add_storehouse(Storehouse(1, std::make_unique<PackageQueue>(PackageQueueType::FIFO)));
+
+    auto ramp_it = factory.find_ramp_by_id(1);
+    auto worker_it = factory.find_worker_by_id(1);
+    auto store_it = factory.find_storehouse_by_id(1);
+
+    ramp_it->receiver_preferences_.add_receiver(&(*worker_it));
+    worker_it->receiver_preferences_.add_receiver(&(*store_it));
+    
+    ASSERT_EQ(ramp_it->receiver_preferences_.get_preferences().size(), 1);
+    ASSERT_EQ(worker_it->receiver_preferences_.get_preferences().size(), 1);
+
+    EXPECT_TRUE(factory.is_consistent());
+
+    factory.remove_worker(1);
+
+    ASSERT_EQ(ramp_it->receiver_preferences_.get_preferences().size(), 0);
+    EXPECT_FALSE(factory.is_consistent());
+
+}
+
+TEST(NodeCollectionTest, FindingByID) {
+    NodeCollection<Ramp> ramps;
+    ramps.add(Ramp(1, 1));
+    ramps.add(Ramp(2, 2));
+
+    auto it = ramps.find_by_id(2);
+    ASSERT_NE(it, ramps.end());
+    auto last_it = ramps.end();
+    --last_it;
+    EXPECT_EQ(it, last_it);
+    EXPECT_EQ(it->get_id(), 2);
+    
+    auto first_it = ramps.find_by_id(1);
+    EXPECT_EQ(first_it->get_id(), 1);
+    EXPECT_EQ(first_it, ramps.begin());
+}
+
+TEST(NodeCollectionTest, RemovingByID) {
+    NodeCollection<Worker> workers;
+    workers.add(Worker(1, 1, std::make_unique<PackageQueue>(PackageQueueType::FIFO)));
+    workers.add(Worker(2, 2, std::make_unique<PackageQueue>(PackageQueueType::FIFO)));
+    workers.add(Worker(3, 3, std::make_unique<PackageQueue>(PackageQueueType::FIFO)));
+
+    ASSERT_EQ(std::distance(workers.begin(), workers.end()), 3);
+
+    workers.remove_by_id(2);
+    EXPECT_EQ(std::distance(workers.begin(), workers.end()), 2);
+    auto it = workers.find_by_id(2);
+    EXPECT_EQ(it, workers.end());
+
+    workers.remove_by_id(1);
+    EXPECT_EQ(std::distance(workers.begin(), workers.end()), 1);
+    it = workers.find_by_id(1);
+    EXPECT_EQ(it, workers.end());
+
+    workers.remove_by_id(3);
+    EXPECT_EQ(std::distance(workers.begin(), workers.end()), 0);
+    it = workers.find_by_id(3);
+    EXPECT_EQ(it, workers.end());
+}
+
+
+
+
+// TESTY Z UPEL
+// PRODUKTY
+TEST(UPELPackageTest, IsAssignedIdLowest) {
+    // przydzielanie ID o jeden większych -- utworzenie dwóch obiektów pod rząd
+
+    Package p1;
+    Package p2;
+
+    EXPECT_EQ(p1.get_id(), 1);
+    EXPECT_EQ(p2.get_id(), 2);
+}
+
+TEST(UPELPackageTest, IsIdReused) {
+    // przydzielanie ID po zwolnionym obiekcie
+
+    {
+        Package p1;
+    }
+    Package p2;
+
+    EXPECT_EQ(p2.get_id(), 1);
+}
+
+TEST(UPELPackageTest, IsMoveConstructorCorrect) {
+    Package p1;
+    Package p2(std::move(p1));
+
+    EXPECT_EQ(p2.get_id(), 1);
+}
+
+TEST(UPELPackageTest, IsAssignmentOperatorCorrect) {
+    Package p1;
+    Package p2 = std::move(p1);
+
+    EXPECT_EQ(p2.get_id(), 1);
+}
+
+TEST(UPELPackageQueueTest, IsFifoCorrect) {
+    PackageQueue q(PackageQueueType::FIFO);
+    q.push(Package(1));
+    q.push(Package(2));
+
+    Package p(std::move(q.pop()));
+    EXPECT_EQ(p.get_id(), 1);
+
+    p = q.pop();
+    EXPECT_EQ(p.get_id(), 2);
+}
+
+TEST(UPELPackageQueueTest, IsLifoCorrect) {
+    PackageQueue q(PackageQueueType::LIFO);
+    q.push(Package(1));
+    q.push(Package(2));
+
+    Package p(std::move(q.pop()));
+    EXPECT_EQ(p.get_id(), 2);
+
+    p = q.pop();
+    EXPECT_EQ(p.get_id(), 1);
+}
+
+// TESTY Z UPEL NODES
+
+TEST(UPELWorkerTest, HasBuffer) {
+    // Test scenariusza opisanego na stronie:
+    // http://home.agh.edu.pl/~mdig/dokuwiki/doku.php?id=teaching:programming:soft-dev:topics:net-simulation:part_nodes#bufor_aktualnie_przetwarzanego_polproduktu
+
+    Worker w(1, 2, std::make_unique<PackageQueue>(PackageQueueType::FIFO));
+    Time t = 1;
+
+    w.receive_package(Package(1));
+    w.do_work(t);
+    ++t;
+    w.receive_package(Package(2));
+    w.do_work(t);
+    auto& buffer = w.get_sending_buffer();
+
+    ASSERT_TRUE(buffer.has_value());
+    EXPECT_EQ(buffer.value().get_id(), 1);
+}
+
+//TESTY Z UPEL FACTORY
+
+TEST(UPELFactoryTest, IsConsistentCorrect) {
+    // R -> W -> S
+
+    Factory factory;
+    factory.add_ramp(Ramp(1, 1));
+    factory.add_worker(Worker(1, 1, std::make_unique<PackageQueue>(PackageQueueType::FIFO)));
+    factory.add_storehouse(Storehouse(1));
+
+    Ramp& r = *(factory.find_ramp_by_id(1));
+    r.receiver_preferences_.add_receiver(&(*factory.find_worker_by_id(1)));
+
+    Worker& w = *(factory.find_worker_by_id(1));
+    w.receiver_preferences_.add_receiver(&(*factory.find_storehouse_by_id(1)));
+
+    EXPECT_TRUE(factory.is_consistent());
+} 
+
+TEST(UPELFactoryIOTest, ParseRamp) {
+    std::istringstream iss("LOADING_RAMP id=1 delivery-interval=3");
+    Factory factory = load_factory_structure(iss);
+
+    ASSERT_EQ(std::next(factory.ramp_cbegin(), 1), factory.ramp_cend());
+    const auto& r = *(factory.ramp_cbegin());
+    EXPECT_EQ(1, r.get_id());
+    EXPECT_EQ(3, r.get_delivery_interval());
 }

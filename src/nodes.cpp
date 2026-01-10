@@ -51,20 +51,19 @@ void PackageSender::send_package() {
     if (receiver == nullptr) {
         return;
     }
-    receiver->receive_package(std::move(*buffer_));
+    receiver->receive_package(std::move(buffer_.value()));
     buffer_ = std::nullopt;
 }
 
 void Worker::do_work(Time t) {
-    if (!buffer_.has_value() && !queue_->empty()) {
+    if (!processing_buffer_.has_value() && !queue_->empty()) {
         t_ = t;
-        buffer_.emplace(queue_->pop());
+        processing_buffer_.emplace(queue_->pop());
     }
 
-    if (buffer_.has_value() && (t - t_ + 1 == pd_)) {
-        push_package(Package(buffer_->get_id()));
-        this->send_package(); //nie wiem czy to powinno tu być ale inaczej nie wysyła pakietu bo bufor sie czysci
-        buffer_.reset();
+    if (processing_buffer_.has_value() && (t - t_ + 1 == pd_)) {
+        push_package(Package(processing_buffer_->get_id()));
+        processing_buffer_.reset();
     }
 }
 

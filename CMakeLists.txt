@@ -29,6 +29,7 @@ set(PLIKI_ZRODLOWE
     src/package.cpp
     src/storage_types.cpp
     src/factory.cpp
+    src/io.cpp
 )
 
 # --- SEKCJA 2: Aplikacja Główna ---
@@ -41,6 +42,7 @@ target_link_libraries(Aplikacja PRIVATE gtest gtest_main)
 enable_testing()
 
 add_executable(Testy test/tests.cpp ${PLIKI_ZRODLOWE})
+
 
 # Linkowanie dla pliku z testami
 target_link_libraries(Testy PRIVATE gtest gtest_main)
