@@ -29,6 +29,7 @@ set(PLIKI_ZRODLOWE
     src/package.cpp
     src/storage_types.cpp
     src/factory.cpp
+    src/io.cpp
 )
 
 # --- SEKCJA 2: Aplikacja Główna ---

@@ -154,6 +154,7 @@ public:
     }
 
     
+    friend Factory load_factory_structure(std::istream& is);
 
 private:
 
