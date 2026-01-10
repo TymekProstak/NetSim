@@ -1,14 +1,16 @@
 #include "nodes.hpp"
 
-void ReciverPreferences::add_receiver(IPackageReceiver* r) {
+void ReceiverPreferences::add_receiver(IPackageReceiver* r) {
     preferences_[r] = 0.0;
-    double equal_prob = 1.0 / preferences_.size();
+    double equal_prob_step = 1.0 / preferences_.size();
+    double prob_sum = equal_prob_step;
     for (auto& [receiver, prob] : preferences_) {
-        prob = equal_prob;
-    }
+        prob = prob_sum;
+        prob_sum += equal_prob_step;
+        }
 }
 
-void ReciverPreferences::remove_receiver(IPackageReceiver* r) {
+void ReceiverPreferences::remove_receiver(IPackageReceiver* r) {
     preferences_.erase(r);
     if (!preferences_.empty()) {
         double equal_prob_step = 1.0 / preferences_.size();
@@ -20,7 +22,7 @@ void ReciverPreferences::remove_receiver(IPackageReceiver* r) {
     }
 }
 
-IPackageReceiver* ReciverPreferences::choose_receiver() const {
+IPackageReceiver* ReceiverPreferences::choose_receiver() const {
     if (preferences_.empty()) {
         return nullptr;
     }

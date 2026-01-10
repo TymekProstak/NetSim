@@ -47,6 +47,14 @@ public:
         return *this;
     }
 
+    bool operator==(const Package& other) const {
+        return id_ == other.id_;
+    }
+
+    bool operator!=(const Package& other) const {
+        return !(*this == other);
+    }
+
     Package(const Package&) = delete;
     Package& operator=(const Package&) = delete;
 
