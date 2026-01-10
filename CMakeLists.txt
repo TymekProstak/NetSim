@@ -42,6 +42,7 @@ enable_testing()
 
 add_executable(Testy test/tests.cpp ${PLIKI_ZRODLOWE})
 
+
 # Linkowanie dla pliku z testami
 target_link_libraries(Testy PRIVATE gtest gtest_main)
 
