@@ -18,14 +18,6 @@ public:
         nodes_.push_back(std::move(node));
     }
 
-    // Usuwanie po ID
-    void remove_by_id(ElementID id) {
-        auto it = find_by_id(id);
-        if (it != nodes_.end()) {
-            nodes_.erase(it);
-        }
-    }
-
     // Wyszukiwanie (wersja do modyfikacji)
     iterator find_by_id(ElementID id) {
         return std::find_if(nodes_.begin(), nodes_.end(),
@@ -40,6 +32,14 @@ public:
                             [id](const Node& node) {
                                 return node.get_id() == id;
                             });
+    }
+
+    // Usuwanie po ID
+    void remove_by_id(ElementID id) {
+        auto it = find_by_id(id);
+        if (it != nodes_.end()) {
+            nodes_.erase(it);
+        }
     }
 
     // Iteratory
@@ -127,11 +127,27 @@ public:
 
     bool is_consistent() const;
 
-    void do_deliveries(Time t);
+    void do_deliveries(Time t){
+        for (auto& ramp : ramps_) {
+            ramp.deliver_goods(t);
+        }
+    }
 
-    void do_package_passing(void);
+    void do_package_passing(){
+        for (auto& ramp : ramps_) {
+            ramp.send_package();
+        }
 
-    void do_work(Time t);
+        for (auto& worker : workers_) {
+            worker.send_package();
+        }
+    }
+
+    void do_work(Time t){
+        for (auto& worker : workers_) {
+            worker.do_work(t);
+        }
+    }
 
     
 
