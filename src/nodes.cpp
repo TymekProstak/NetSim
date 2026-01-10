@@ -63,6 +63,7 @@ void Worker::do_work(Time t) {
 
     if (buffer_.has_value() && (t - t_ + 1 == pd_)) {
         push_package(Package(buffer_->get_id()));
+        this->send_package(); //nie wiem czy to powinno tu być ale inaczej nie wysyła pakietu bo bufor sie czysci
         buffer_.reset();
     }
 }

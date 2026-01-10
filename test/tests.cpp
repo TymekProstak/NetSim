@@ -228,3 +228,34 @@ TEST(WorkerTest, ProcessesPackageCorrectly) {
     // processing ends
     EXPECT_FALSE(w.get_sending_buffer().has_value());
 }
+
+TEST(WorkerTest, SendsProcessedPackageCorrectly) {
+    ElementID id = 1;
+    TimeOffset processing_duration = 2;
+    auto queue = std::make_unique<PackageQueue>(PackageQueueType::FIFO);
+    Worker w(id, processing_duration,  std::move(queue));
+    Storehouse sh(1, std::make_unique<PackageQueue>(PackageQueueType::FIFO));
+    w.receiver_preferences_.add_receiver(&sh);
+
+    Package p1(1);
+    Package p2(2);
+    w.receive_package(std::move(p1));
+    EXPECT_EQ(std::distance(w.cbegin(), w.cend()), 1);
+    
+    w.receive_package(std::move(p2));
+    EXPECT_EQ(std::distance(w.cbegin(), w.cend()), 2);
+
+    w.do_work(1);
+    EXPECT_TRUE(w.get_sending_buffer().has_value());
+
+    w.do_work(2);
+    EXPECT_FALSE(w.get_sending_buffer().has_value());
+    EXPECT_EQ(std::distance(sh.cbegin(), sh.cend()), 1);
+
+    w.do_work(3);
+    EXPECT_TRUE(w.get_sending_buffer().has_value());
+
+    w.do_work(4);
+    EXPECT_FALSE(w.get_sending_buffer().has_value());
+    EXPECT_EQ(std::distance(sh.cbegin(), sh.cend()), 2);
+}
