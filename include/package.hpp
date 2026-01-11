@@ -27,8 +27,7 @@ public:
         assigned_IDs.insert(id_);
     }
 
-    Package(Package&& other) noexcept {
-        id_ = other.id_;
+    Package(Package&& other) noexcept : id_(other.id_) {
         other.id_ = -1;
     }
 

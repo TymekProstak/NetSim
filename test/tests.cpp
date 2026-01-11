@@ -145,31 +145,33 @@ TEST(WorkerTest, ProcessesPackageCorrectly) {
     Package p2(2);
     w.receive_package(std::move(p1));
     w.receive_package(std::move(p2));
-    EXPECT_FALSE(w.get_sending_buffer().has_value());
+    EXPECT_FALSE(w.get_processing_buffer().has_value());
 
     w.do_work(1);
     // processing starts
-    EXPECT_TRUE(w.get_sending_buffer().has_value());
+    EXPECT_TRUE(w.get_processing_buffer().has_value());
 
     w.do_work(2);
     // still processing
-    EXPECT_TRUE(w.get_sending_buffer().has_value());
+    EXPECT_TRUE(w.get_processing_buffer().has_value());
 
     w.do_work(3);
     // processing ends
-    EXPECT_FALSE(w.get_sending_buffer().has_value());
+    EXPECT_FALSE(w.get_processing_buffer().has_value());
+    EXPECT_TRUE(w.get_sending_buffer().has_value());
     
     w.do_work(4);
     // next package is put into processing
-    EXPECT_TRUE(w.get_sending_buffer().has_value());
+    EXPECT_TRUE(w.get_processing_buffer().has_value());
 
     w.do_work(5);
     // still processing
-    EXPECT_TRUE(w.get_sending_buffer().has_value());
+    EXPECT_TRUE(w.get_processing_buffer().has_value());
 
     w.do_work(6);
     // processing ends
-    EXPECT_FALSE(w.get_sending_buffer().has_value());
+    EXPECT_FALSE(w.get_processing_buffer().has_value());
+    EXPECT_TRUE(w.get_sending_buffer().has_value());
 }
 
 TEST(WorkerTest, SendsProcessedPackageCorrectly) {
@@ -189,16 +191,22 @@ TEST(WorkerTest, SendsProcessedPackageCorrectly) {
     EXPECT_EQ(std::distance(w.cbegin(), w.cend()), 2);
 
     w.do_work(1);
-    EXPECT_TRUE(w.get_sending_buffer().has_value());
+    EXPECT_TRUE(w.get_processing_buffer().has_value());
 
     w.do_work(2);
+    EXPECT_FALSE(w.get_processing_buffer().has_value());
+    EXPECT_TRUE(w.get_sending_buffer().has_value());
+    w.send_package();
     EXPECT_FALSE(w.get_sending_buffer().has_value());
     EXPECT_EQ(std::distance(sh.cbegin(), sh.cend()), 1);
 
     w.do_work(3);
-    EXPECT_TRUE(w.get_sending_buffer().has_value());
+    EXPECT_TRUE(w.get_processing_buffer().has_value());
 
     w.do_work(4);
+    EXPECT_FALSE(w.get_processing_buffer().has_value());
+    EXPECT_TRUE(w.get_sending_buffer().has_value());
+    w.send_package();
     EXPECT_FALSE(w.get_sending_buffer().has_value());
     EXPECT_EQ(std::distance(sh.cbegin(), sh.cend()), 2);
 }

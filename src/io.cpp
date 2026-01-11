@@ -24,7 +24,7 @@ std::pair<std::string, int> decode_node_id(const std::string& raw_id) {
 
 
 void generate_structure_report(const Factory& f, std::ostream& os) {
-    os << "\n== LOADING RAMPS ==\n";
+    os << "\n== LOADING RAMPS ==\n\n";
     for(auto it = f.ramp_cbegin(); it != f.ramp_cend(); ++it) {
         os << "LOADING RAMP #" << it->get_id() << "\n";
         os << "  Delivery interval: " << it->get_delivery_interval() << "\n";
@@ -53,9 +53,10 @@ void generate_structure_report(const Factory& f, std::ostream& os) {
         for (const auto& receiver : sorted_receivers) {
             os << "    " << receiver.first << " #" << receiver.second << "\n";
         }
+        os << "\n";
     }
     
-    os << "\n== WORKERS ==\n";
+    os << "\n== WORKERS ==\n\n";
     for(auto it = f.worker_cbegin(); it != f.worker_cend(); ++it) {
         PackageQueueType qt = it->get_queue()->get_queue_type();
         std::string sqt;
@@ -95,9 +96,10 @@ void generate_structure_report(const Factory& f, std::ostream& os) {
         for (const auto& receiver : sorted_receivers) {
             os << "    " << receiver.first << " #" << receiver.second << "\n";
         }
+        os << "\n";
     }
 
-    os << "\n== STOREHOUSES ==\n";
+    os << "\n== STOREHOUSES ==\n\n";
     for(auto it = f.storehouse_cbegin(); it != f.storehouse_cend(); ++it) {
         os << "STOREHOUSE #" << it->get_id() << "\n";
     }
@@ -106,7 +108,7 @@ void generate_structure_report(const Factory& f, std::ostream& os) {
 void generate_simulation_report(const Factory& f, std::ostream& os, Time turn) {
     os << "=== [ Turn: " << turn << " ] ===\n";
     //WORKERS
-    os << "== WORKERS == \n";
+    os << "\n== WORKERS == \n";
 
     std::vector<const Worker*> sorted_workers;
     for(auto it = f.worker_cbegin(); it != f.worker_cend(); ++it) {
@@ -141,9 +143,10 @@ void generate_simulation_report(const Factory& f, std::ostream& os, Time turn) {
         } else {
             os << "(empty)\n";
         }
+        os << "\n";
     }
 
-    os << "\n== STOREHOUSES == \n";
+    os << "\n== STOREHOUSES == \n\n";
     for(auto it = f.storehouse_cbegin(); it != f.storehouse_cend(); ++it) {
         os << "STOREHOUSE #" << it->get_id() << "\n";
         os << "  Stock: ";
@@ -155,4 +158,5 @@ void generate_simulation_report(const Factory& f, std::ostream& os, Time turn) {
             }
         }
     }
+    os << "\n";
 }
