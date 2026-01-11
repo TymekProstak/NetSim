@@ -60,8 +60,9 @@ class ReceiverPreferences {
 
 class Storehouse : public IPackageReceiver {
   public:
-    Storehouse(ElementID id, std::unique_ptr<IPackageStockpile> d = std::make_unique<PackageQueue>(PackageQueueType::FIFO))
-        : id_(id), d_(std::move(d)) {}
+
+    Storehouse(ElementID id, std::unique_ptr<IPackageStockpile> d = std::make_unique<PackageQueue>(PackageQueueType::FIFO));
+    
     void receive_package(Package&& p) override {
         d_->push(std::move(p));
     }
