@@ -3,19 +3,21 @@
 PackageQueue::PackageQueue(PackageQueueType queue_type) : queue_type_(queue_type), queue_() {};
 
 Package PackageQueue::pop() {
+  Package p;
   if(queue_.empty()) {
     throw std::out_of_range("The queue is empty");
   }
   if(queue_type_ == PackageQueueType::FIFO) {
-       Package temp = std::move(queue_.front());
-      queue_.pop_front();
-      return temp;
+    Package temp = std::move(queue_.front());
+    queue_.pop_front();
+    return temp;
   }
   if(queue_type_ == PackageQueueType::LIFO) {
     Package temp = std::move(queue_.back());
     queue_.pop_back();
     return temp;
   }
+  return p;
 }
 
 PackageQueueType PackageQueue::get_queue_type() const {

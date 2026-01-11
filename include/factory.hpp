@@ -156,6 +156,10 @@ public:
     
     friend Factory load_factory_structure(std::istream& is);
 
+    friend void save_factory_structure(const Factory& f, std::ostream& os);
+    template <typename Node>
+    void link_fill(std::ostream& os, const Node& sender, ElementID src_id, std::string src_type_str) const;
+
 private:
 
     template <typename Node>
