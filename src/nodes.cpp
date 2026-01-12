@@ -2,44 +2,35 @@
 
 void ReceiverPreferences::add_receiver(IPackageReceiver* r) {
     preferences_[r] = 0.0;
-    double equal_prob_step = 1.0 / preferences_.size();
-    double prob_sum = equal_prob_step;
+    double equal_prob = 1.0 / preferences_.size();
+
     for (auto& [receiver, prob] : preferences_) {
-        prob = prob_sum;
-        prob_sum += equal_prob_step;
-        }
+        prob = equal_prob;
+    }
 }
 
 void ReceiverPreferences::remove_receiver(IPackageReceiver* r) {
     preferences_.erase(r);
-    if (!preferences_.empty()) {
-        double equal_prob_step = 1.0 / preferences_.size();
-        double prob_sum = equal_prob_step;
-        for (auto& [receiver, prob] : preferences_) {
-            prob = prob_sum;
-            prob_sum += equal_prob_step;
-        }
+    if (preferences_.empty()) return;
+
+    double equal_prob = 1.0 / preferences_.size();
+    for (auto& [receiver, prob] : preferences_) {
+        prob = equal_prob;
     }
 }
 
 IPackageReceiver* ReceiverPreferences::choose_receiver() const {
-    if (preferences_.empty()) {
-        return nullptr;
-    }
+    if (preferences_.empty()) return nullptr;
 
     const double p = generate_probability_();
-    if (p < 0.0 || p > 1.0) {
-        return nullptr;
-    }
-
-    double prev_p = 0.0;
+    
+    double distribution = 0.0;
     for (const auto& [receiver, prob] : preferences_) {
-        if (prev_p < p && p <= prob) {
+        distribution += prob;
+        if (p <= distribution) {
             return receiver;
         }
-        prev_p = prob;
     }
-
     return preferences_.rbegin()->first;
 }
 
@@ -51,20 +42,22 @@ void PackageSender::send_package() {
     if (receiver == nullptr) {
         return;
     }
-    receiver->receive_package(std::move(*buffer_));
+    receiver->receive_package(std::move(buffer_.value()));
     buffer_ = std::nullopt;
 }
 
 void Worker::do_work(Time t) {
-    if (!buffer_.has_value() && !queue_->empty()) {
-        t_ = t;
-        buffer_.emplace(queue_->pop());
+    if (!processing_buffer_.has_value() && !queue_->empty()) {
+        processing_buffer_.emplace(queue_->pop()); 
+        t_ = t; 
     }
 
-    if (buffer_.has_value() && (t - t_ + 1 == pd_)) {
-        push_package(Package(buffer_->get_id()));
-        this->send_package(); //nie wiem czy to powinno tu być ale inaczej nie wysyła pakietu bo bufor sie czysci
-        buffer_.reset();
+    if (processing_buffer_.has_value()) {
+        if (t - t_ + 1 == pd_) {
+            push_package(std::move(*processing_buffer_));
+            
+            processing_buffer_.reset();
+        }
     }
 }
 
@@ -77,3 +70,6 @@ void Ramp::deliver_goods(Time t) {
         push_package(Package());
     }
 }
+
+Storehouse::Storehouse(ElementID id, std::unique_ptr<IPackageStockpile> d)
+    : id_(id), d_(std::move(d)) {}

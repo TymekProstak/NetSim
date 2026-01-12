@@ -14,6 +14,7 @@ public:
     using iterator = typename container_t::iterator;
     using const_iterator = typename container_t::const_iterator;
 
+    // Dodawanie (&& - przenoszenie)
     void add(Node&& node) {
         nodes_.push_back(std::move(node));
     }
@@ -145,11 +146,29 @@ public:
     }
 
     
+    friend Factory load_factory_structure(std::istream& is);
+
+    friend void save_factory_structure(const Factory& f, std::ostream& os);
+    template <typename Node>
+    void link_fill(std::ostream& os, const Node& sender, ElementID src_id, std::string src_type_str) const;
 
 private:
 
     template <typename Node>
     void remove_receiver(NodeCollection<Node>& collection, ElementID id) {
+        auto it = collection.find_by_id(id);
+        if (it != collection.end()) {
+            auto receiver_ptr = dynamic_cast<IPackageReceiver*>(&(*it));
+        
+            if(receiver_ptr) {
+                for (auto& ramp : ramps_) {
+                    ramp.receiver_preferences_.remove_receiver(receiver_ptr);
+                }
+                for (auto& worker : workers_) {
+                    worker.receiver_preferences_.remove_receiver(receiver_ptr);
+                }
+            }
+        }
         collection.remove_by_id(id);
     }
     bool has_reachable_storehouse(const PackageSender* sender, std::map<const PackageSender*, NodeColor>& colors) const;

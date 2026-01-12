@@ -29,12 +29,17 @@ set(PLIKI_ZRODLOWE
     src/package.cpp
     src/storage_types.cpp
     src/factory.cpp
+    src/io.cpp
 )
 
 # --- SEKCJA 2: Aplikacja Główna ---
 add_executable(Aplikacja src/main.cpp ${PLIKI_ZRODLOWE})
 
+add_executable(LoadFactory test/io_test.cpp ${PLIKI_ZRODLOWE})
+
 target_link_libraries(Aplikacja PRIVATE gtest gtest_main)
+
+
 
 
 # --- SEKCJA 3: Konfiguracja Testów ---
@@ -42,9 +47,16 @@ enable_testing()
 
 add_executable(Testy test/tests.cpp ${PLIKI_ZRODLOWE})
 
+
+
 # Linkowanie dla pliku z testami
 target_link_libraries(Testy PRIVATE gtest gtest_main)
 
 # Integracja z VS Code / CTest
 include(GoogleTest)
 gtest_discover_tests(Testy)
+
+add_custom_command(TARGET LoadFactory POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy
+    "${CMAKE_CURRENT_SOURCE_DIR}/test/load_factory.txt"
+    "$<TARGET_FILE_DIR:LoadFactory>/test/load_factory.txt")
