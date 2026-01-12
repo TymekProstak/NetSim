@@ -1,6 +1,8 @@
 #include "io.hpp"
 #include "factory.hpp"
 
+/* PRZENIESIONE DO FACTORY
+
 std::map<std::string, std::string> parse_line(const std::string& line) {
     std::map<std::string, std::string> result;
     std::stringstream ss(line);
@@ -160,3 +162,4 @@ void generate_simulation_report(const Factory& f, std::ostream& os, Time turn) {
     }
     os << "\n";
 }
+    */
