@@ -169,6 +169,8 @@ class Worker : public PackageSender, public IPackageReceiver {
         ReceiverType get_receiver_type() const override {
             return ReceiverType::WORKER;
         }
+        *IPackageQueue get_queue()const { return queue_; }
+        
 
         IPackageQueue* get_queue() const {
             return queue_.get();

@@ -10,7 +10,6 @@ enum class NodeColor {NOT_VISITED, VISITED, VERIFIED};
 template <typename Node>
 class NodeCollection {
 public:
-    // Aliasy typów (żeby w Factory pisać NodeCollection<Ramp>::iterator)
     using container_t = std::list<Node>;
     using iterator = typename container_t::iterator;
     using const_iterator = typename container_t::const_iterator;
@@ -20,7 +19,6 @@ public:
         nodes_.push_back(std::move(node));
     }
 
-    // Wyszukiwanie (wersja do modyfikacji)
     iterator find_by_id(ElementID id) {
         return std::find_if(nodes_.begin(), nodes_.end(),
                             [id](const Node& node) {
@@ -28,7 +26,6 @@ public:
                             });
     }
 
-    // Wyszukiwanie (wersja tylko do odczytu)
     const_iterator find_by_id(ElementID id) const {
         return std::find_if(nodes_.cbegin(), nodes_.cend(),
                             [id](const Node& node) {
@@ -36,7 +33,6 @@ public:
                             });
     }
 
-    // Usuwanie po ID
     void remove_by_id(ElementID id) {
         auto it = find_by_id(id);
         if (it != nodes_.end()) {
@@ -44,7 +40,6 @@ public:
         }
     }
 
-    // Iteratory
     iterator begin() { return nodes_.begin(); }
     iterator end() { return nodes_.end(); }
     const_iterator begin() const { return nodes_.begin(); }
@@ -58,7 +53,6 @@ private:
 
 class Factory {
 public:
-// ---------------- RAMPY (Ramp) ----------------
     void add_ramp(Ramp&& r) {
         ramps_.add(std::move(r));
     }
@@ -83,7 +77,6 @@ public:
         return ramps_.cend();
     }
 
-    // ---------------- ROBOTNICY (Worker) ----------------
     void add_worker(Worker&& w) {
         workers_.add(std::move(w));
     }
@@ -106,7 +99,6 @@ public:
         return workers_.cend();
     }
 
-    // ---------------- MAGAZYNY (Storehouse) ----------------
     void add_storehouse(Storehouse&& s) {
         storehouses_.add(std::move(s));
     }
