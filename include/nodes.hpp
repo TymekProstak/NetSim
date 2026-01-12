@@ -134,60 +134,35 @@ class Ramp : public PackageSender {
     };
 
 class Worker : public PackageSender, public IPackageReceiver {
-    public:
-        Worker(ElementID id, TimeOffset pd, std::unique_ptr<IPackageQueue> q)
-            : id_(id), pd_(pd), queue_(std::move(q)) {}
+public:
+    Worker(ElementID id, TimeOffset pd, std::unique_ptr<IPackageQueue> q)
+        : id_(id), pd_(pd), queue_(std::move(q)) {}
 
-        void receive_package(Package&& p) override {
-            queue_->push(std::move(p));
-        }
+    ElementID get_id() const override { return id_; }
 
-        void do_work(Time t);
+    void receive_package(Package&& p) override { queue_->push(std::move(p)); }
 
-        ElementID get_id() const override {
-            return id_;
-        }
-        Time get_package_processing_start_time() const {
-            return t_;
-        }
-        TimeOffset get_processing_duration() const {
-            return pd_;
-        }
-        IPackageStockpile::const_iterator cbegin() const override {
-            return queue_->cbegin();
-        }   
-        IPackageStockpile::const_iterator cend() const override {
-            return queue_->cend();
-        }
-        IPackageStockpile::const_iterator begin() const override {
-            return queue_->begin();
-        }
-        IPackageStockpile::const_iterator end() const override {
-            return queue_->end();
-        }
+    void do_work(Time t);
 
-        ReceiverType get_receiver_type() const override {
-            return ReceiverType::WORKER;
-        }
-        *IPackageQueue get_queue()const { return queue_; }
-        
+    IPackageQueue* get_queue() const { return queue_.get(); }
 
-        IPackageQueue* get_queue() const {
-            return queue_.get();
-        }
+    const std::optional<Package>& get_processing_buffer() const { return processing_buffer_; }
+    TimeOffset get_processing_duration() const { return pd_; }
+    Time get_package_processing_start_time() const { return t_; }
 
-        const std::optional<Package>& get_processing_buffer() const {
-            return processing_buffer_;
-        }
+    IPackageStockpile::const_iterator cbegin() const override { return queue_->cbegin(); }
+    IPackageStockpile::const_iterator cend() const override { return queue_->cend(); }
+    IPackageStockpile::const_iterator begin() const override { return queue_->begin(); }
+    IPackageStockpile::const_iterator end() const override { return queue_->end(); }
 
-        Worker(Worker&&) = default;
+    ReceiverType get_receiver_type() const override { return ReceiverType::WORKER; }
 
-        private:
-        ElementID id_;
-        TimeOffset pd_;
-        Time t_;
-        std::unique_ptr<IPackageQueue> queue_;
-        std::optional<Package> processing_buffer_ = std::nullopt;
+private:
+    ElementID id_;
+    TimeOffset pd_;
+    std::unique_ptr<IPackageQueue> queue_;
 
-    };
+    Time t_{0};
+    std::optional<Package> processing_buffer_ = std::nullopt;
+};
 
