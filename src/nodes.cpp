@@ -66,9 +66,14 @@ void Ramp::deliver_goods(Time t) {
         return;
     }
 
-    if  ((t - 1) % delivery_interval_ == 0){
-        push_package(Package());
-    }
+    // if  (t  % delivery_interval_ == 0  || t == 1){
+    //     push_package(Package());
+    //     std::cout << "Ramp " << id_ << " delivered package " << buffer_->get_id() << " at time " << t << "\n";
+    // }
+      if  ((t-1)  % delivery_interval_ == 0){
+         push_package(Package());
+        
+     }
 }
 
 Storehouse::Storehouse(ElementID id, std::unique_ptr<IPackageStockpile> d)
