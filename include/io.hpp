@@ -7,6 +7,8 @@
 #include <fstream>
 #include <sstream>
 
+/* PRZENIESIONE DO FACTORY
+
 class Factory;
 
 enum class ElementType {
@@ -39,3 +41,4 @@ std::pair<std::string, int> decode_node_id(const std::string& raw_id);
 Factory load_factory_structure(std::istream& is);
 void generate_structure_report(const Factory& f, std::ostream& os);
 void generate_simulation_report(const Factory& f, std::ostream& os, Time turn);
+*/

@@ -4,12 +4,19 @@
 #include "types.hpp"
 #include <list>
 #include <optional>
+#include<istream>
+#include<string>
+#include<iostream>
+#include<map>
+#include<fstream>
+#include<sstream>
 
 enum class NodeColor {NOT_VISITED, VISITED, VERIFIED};
 
 template <typename Node>
 class NodeCollection {
 public:
+    // Aliasy typów (żeby w Factory pisać NodeCollection<Ramp>::iterator)
     using container_t = std::list<Node>;
     using iterator = typename container_t::iterator;
     using const_iterator = typename container_t::const_iterator;
@@ -19,6 +26,7 @@ public:
         nodes_.push_back(std::move(node));
     }
 
+    // Wyszukiwanie (wersja do modyfikacji)
     iterator find_by_id(ElementID id) {
         return std::find_if(nodes_.begin(), nodes_.end(),
                             [id](const Node& node) {
@@ -26,6 +34,7 @@ public:
                             });
     }
 
+    // Wyszukiwanie (wersja tylko do odczytu)
     const_iterator find_by_id(ElementID id) const {
         return std::find_if(nodes_.cbegin(), nodes_.cend(),
                             [id](const Node& node) {
@@ -33,6 +42,7 @@ public:
                             });
     }
 
+    // Usuwanie po ID
     void remove_by_id(ElementID id) {
         auto it = find_by_id(id);
         if (it != nodes_.end()) {
@@ -40,6 +50,7 @@ public:
         }
     }
 
+    // Iteratory
     iterator begin() { return nodes_.begin(); }
     iterator end() { return nodes_.end(); }
     const_iterator begin() const { return nodes_.begin(); }
@@ -53,6 +64,7 @@ private:
 
 class Factory {
 public:
+// ---------------- RAMPY (Ramp) ----------------
     void add_ramp(Ramp&& r) {
         ramps_.add(std::move(r));
     }
@@ -77,6 +89,7 @@ public:
         return ramps_.cend();
     }
 
+    // ---------------- ROBOTNICY (Worker) ----------------
     void add_worker(Worker&& w) {
         workers_.add(std::move(w));
     }
@@ -99,6 +112,7 @@ public:
         return workers_.cend();
     }
 
+    // ---------------- MAGAZYNY (Storehouse) ----------------
     void add_storehouse(Storehouse&& s) {
         storehouses_.add(std::move(s));
     }
@@ -147,7 +161,6 @@ public:
 
     
     friend Factory load_factory_structure(std::istream& is);
-
     friend void save_factory_structure(const Factory& f, std::ostream& os);
     template <typename Node>
     void link_fill(std::ostream& os, const Node& sender, ElementID src_id, std::string src_type_str) const;
@@ -176,3 +189,35 @@ private:
     NodeCollection<Worker> workers_;
     NodeCollection<Storehouse> storehouses_;
 };
+
+
+enum class ElementType {
+    RAMP,
+    WORKER,
+    STOREHOUSE,
+    LINK
+};
+
+const std::map<ElementType, std::string> ElementTypeTags = {
+    {ElementType::RAMP, "LOADING_RAMP"},
+    {ElementType::WORKER, "WORKER"},
+    {ElementType::STOREHOUSE, "STOREHOUSE"},
+    {ElementType::LINK, "LINK"}
+};
+
+// Definicje typów węzłów do dekodowania
+const std::string NODE_TYPE_RAMP = "ramp";
+const std::string NODE_TYPE_WORKER = "worker";
+const std::string NODE_TYPE_STOREHOUSE = "store";
+
+// Definicje typów węzłów do raportów
+const std::string REPORT_NODE_WORKER = "worker";
+const std::string REPORT_NODE_STOREHOUSE = "storehouse";
+
+std::map<std::string, std::string> parse_line(const std::string& line);
+
+std::pair<std::string, int> decode_node_id(const std::string& raw_id);
+
+Factory load_factory_structure(std::istream& is);
+void generate_structure_report(const Factory& f, std::ostream& os);
+void generate_simulation_report(const Factory& f, std::ostream& os, Time turn);
