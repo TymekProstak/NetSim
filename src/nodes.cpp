@@ -66,7 +66,7 @@ void Ramp::deliver_goods(Time t) {
         return;
     }
 
-    if  (t % delivery_interval_ == 0){
+    if  ((t - 1) % delivery_interval_ == 0){
         push_package(Package());
     }
 }
